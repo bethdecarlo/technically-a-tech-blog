@@ -4,7 +4,6 @@ const withAuth = require('../../utils/auth');
 const sequelize = require('../../config/connection');
 
 // GET 
-//gets all posts in db
 router.get('/', (req, res) => {
     console.log('======================');
     Post.findAll({
@@ -60,7 +59,11 @@ router.get('/:id', (req, res) => {
         },
         {
           model: Comment,
-          attributes: ['id', 'comment_text', 'post_id', 'user_id', 'created_at'],
+          attributes: ['id', 
+                        'comment_text', 
+                        'post_id', 
+                        'user_id', 
+                        'created_at'],
           include: {
             model: User,
             attributes: ['username']
@@ -81,8 +84,6 @@ router.get('/:id', (req, res) => {
       });
   });
 
-// CREATE 
-//create a new post
 router.post('/', withAuth, (req, res) => {
     Post.create({ 
         title: req.body.title,
@@ -96,8 +97,6 @@ router.post('/', withAuth, (req, res) => {
         });
 });
 
-// UPDATE 
-//update a previous post from dashboard
 router.put('/:id', withAuth, (req, res) => {
     Post.update({
         title: req.body.title,

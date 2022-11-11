@@ -79,20 +79,66 @@ router.get('/edit/:id', withAuth, (req, res) => {
     }
     ]
 })
-    .then(dbPostData => {
-    const post = dbPostData.get({ plain: true });
-    res.render('edit-posts', { post , loggedIn: true }); 
-    })
-    .catch(err => {
-    console.log(err);
-    res.status(500).json(err);
-    });
+.then(dbPostData => {
+  if (!dbPostData) {
+    res.status(404).json({ message: ' Try again. No post found with this id' });
+    return;
+  }
+
+  // serialize the data
+  const post = dbPostData.get({ plain: true });
+
+  res.render('edit-post', {
+      post,
+      loggedIn: true
+      });
+})
+.catch(err => {
+  console.log(err);
+  res.status(500).json(err);
+});
 });
 
-//GET
-// new posts
-router.get('/newpost', (req, res) => {
-  res.render('new-posts');
+router.get('/create/', withAuth, (req, res) => {
+Post.findAll({
+where: {
+  // use the ID from the session
+  user_id: req.session.user_id
+},
+attributes: [
+            'id', 
+            'post_text', 
+            'title',
+            'created_at'],
+include: [
+  {
+    model: Comment,
+    attributes: ['id', 
+                'comment_text', 
+                'post_id', 
+                'user_id', 
+                'created_at'],
+     include: {
+        model: User,
+        attributes: ['username']
+        }
+    },
+  {
+    model: User,
+    attributes: ['username',]
+  }
+]
+})
+.then(dbPostData => {
+  // serialize data before passing to template
+  const posts = dbPostData.map(post => post.get({ plain: true }));
+  res.render('create-post', { posts, loggedIn: true });
+})
+.catch(err => {
+  console.log(err);
+  res.status(500).json(err);
 });
+});
+
 
 module.exports = router;
